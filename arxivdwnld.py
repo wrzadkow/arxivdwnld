@@ -4,23 +4,22 @@ import glob,os,re,subprocess, sys
 def DownloadAndUnpack(id):
 	print('opening directory for paper '+str(id))
 	idreplaced=str(id).replace('/', '') #for better handling of old arxiv IDs
-	os.system('mkdir '+idreplaced)
+	os.system('mkdir '+idreplaced) #tar command requires directory created
 	os.system('wget arxiv.org/e-print/'+str(id)+' --output-document='+idreplaced+'downloaded'+
 				' --user-agent="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" -P '
 				+str(id))
 	filetype = subprocess.check_output("file "+idreplaced+'downloaded', shell=True)
-	filetype = filetype.decode("utf-8") #convert bytes object to string
-	print('filetype retrieved: \n',filetype)	
+	filetype = filetype.decode("utf-8") #convert bytes object returned by 'file' to string	
 	#to parse the 'file' command output, we need position of filetype in the returned string
-	pos=len(idreplaced+'downloaded')+2
-	print('filetype in position', filetype[pos:pos+4])	
+	pos=len(idreplaced+'downloaded')+2 #position of actual file type in the 'filetype string'	
 	if (filetype[pos:pos+4]=='gzip'):
 		print('uncompressing') 
 		command='tar -xvzf '+idreplaced+'downloaded -C '+idreplaced
-		print('command',command)
 		os.system(command)
 	elif(filetype[pos:pos+3]=='PDF'):
 		print('the paper was in PDF format, no uncompressing needed')
+	elif(filetype[pos:pos+5]=='LaTeX'):
+		print('the paper was in LaTeX format, no uncompressing needed')
 	else:
 		print('format not recognized, downloaded as is')
 
